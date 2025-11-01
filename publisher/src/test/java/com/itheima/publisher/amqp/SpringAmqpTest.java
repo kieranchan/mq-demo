@@ -27,6 +27,7 @@ class SpringAmqpTest {
         }
     }
 
+    // Fanout類型交換機測試
     @Test
     public void testFanoutExchange() {
         String exchangeName = "hmall.fanout";
@@ -34,25 +35,31 @@ class SpringAmqpTest {
         rabbitTemplate.convertAndSend(exchangeName, "", message);
     }
 
+    // Direct類型交換機測試
     @Test
     public void testDirectExchange() {
         String exchangeName = "hmall.direct";
-//        String msg = "RoutingKey=Red";
-//        rabbitTemplate.convertAndSend(exchangeName,"red",msg);
-//        String msg = "RoutingKey=lue";
-//        rabbitTemplate.convertAndSend(exchangeName,"blue",msg);
-        String msg = "RoutingKey=yellow";
+        String msg = "RoutingKey=red";
+        rabbitTemplate.convertAndSend(exchangeName, "red", msg);
+
+        msg = "RoutingKey=blue";
+        rabbitTemplate.convertAndSend(exchangeName, "blue", msg);
+
+        msg = "RoutingKey=yellow";
         rabbitTemplate.convertAndSend(exchangeName, "yellow", msg);
     }
 
+    // Topic類型交換機測試
     @Test
     public void testTopicExchange() {
         String exchangeName = "hmall.topic";
-//        String message = "RoutingKey=china.news";
-//        rabbitTemplate.convertAndSend(exchangeName, "china.news", message);
-//        String message = "RoutingKey=china.news1";
-//        rabbitTemplate.convertAndSend(exchangeName, "china.news1", message);
-        String message = "RoutingKey=china1.news";
+        String message = "RoutingKey=china.news";
+        rabbitTemplate.convertAndSend(exchangeName, "china.news", message);
+
+        message = "RoutingKey=china.news1";
+        rabbitTemplate.convertAndSend(exchangeName, "china.news1", message);
+
+        message = "RoutingKey=china1.news";
         rabbitTemplate.convertAndSend(exchangeName, "china1.news", message);
     }
 }
