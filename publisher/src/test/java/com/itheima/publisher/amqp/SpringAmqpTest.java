@@ -36,12 +36,23 @@ class SpringAmqpTest {
 
     @Test
     public void testDirectExchange() {
-        String exchangeName="hmall.direct";
+        String exchangeName = "hmall.direct";
 //        String msg = "RoutingKey=Red";
 //        rabbitTemplate.convertAndSend(exchangeName,"red",msg);
 //        String msg = "RoutingKey=lue";
 //        rabbitTemplate.convertAndSend(exchangeName,"blue",msg);
         String msg = "RoutingKey=yellow";
-        rabbitTemplate.convertAndSend(exchangeName,"yellow",msg);
+        rabbitTemplate.convertAndSend(exchangeName, "yellow", msg);
+    }
+
+    @Test
+    public void testTopicExchange() {
+        String exchangeName = "hmall.topic";
+//        String message = "RoutingKey=china.news";
+//        rabbitTemplate.convertAndSend(exchangeName, "china.news", message);
+//        String message = "RoutingKey=china.news1";
+//        rabbitTemplate.convertAndSend(exchangeName, "china.news1", message);
+        String message = "RoutingKey=china1.news";
+        rabbitTemplate.convertAndSend(exchangeName, "china1.news", message);
     }
 }
