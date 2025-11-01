@@ -26,4 +26,11 @@ class SpringAmqpTest {
             Thread.sleep(20);
         }
     }
+
+    @Test
+    public void testFanoutExchange() {
+        String exchangeName = "hmall.fanout";
+        String message = "hello,everyone!";
+        rabbitTemplate.convertAndSend(exchangeName, "", message);
+    }
 }
