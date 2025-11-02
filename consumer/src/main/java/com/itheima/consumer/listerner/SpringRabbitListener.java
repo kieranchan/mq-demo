@@ -8,6 +8,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalTime;
+import java.util.Map;
 
 @Component
 public class SpringRabbitListener {
@@ -77,15 +78,19 @@ public class SpringRabbitListener {
         System.out.println("消費者1接收到topic.queue1的消息：【" + msg + "】");
     }
 
-//    @RabbitListener(queues = "topic.queue2")
+    //    @RabbitListener(queues = "topic.queue2")
     @RabbitListener(bindings = @QueueBinding(
             value = @Queue(name = "topic.queue2"),
-            exchange = @Exchange(name = "hmall.topic",type = ExchangeTypes.TOPIC),
+            exchange = @Exchange(name = "hmall.topic", type = ExchangeTypes.TOPIC),
             key = "#.news"
     ))
     public void listenTopicQueue2(String msg) {
         System.out.println("消費者2接收到topic.queue2的消息：【" + msg + "】");
     }
 
-
+    // 監聽Map類型的數據
+    @RabbitListener(queues = "object.queue")
+    public void listenMapMessage(Map<String, Object> map) {
+        System.out.println(map);
+    }
 }

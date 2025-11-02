@@ -5,6 +5,8 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.HashMap;
+
 @SpringBootTest
 class SpringAmqpTest {
     @Autowired
@@ -61,5 +63,14 @@ class SpringAmqpTest {
 
         message = "RoutingKey=china1.news";
         rabbitTemplate.convertAndSend(exchangeName, "china1.news", message);
+    }
+
+    // 消息轉換器測試
+    @Test
+    public void testSendMap(){
+        HashMap<String, Object> msg = new HashMap<>();
+        msg.put("name","張三");
+        msg.put("age",16);
+        rabbitTemplate.convertAndSend("object.queue", msg);
     }
 }
