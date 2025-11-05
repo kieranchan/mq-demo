@@ -73,4 +73,9 @@ class SpringAmqpTest {
         msg.put("age",16);
         rabbitTemplate.convertAndSend("object.queue", msg);
     }
+
+    @Test
+    public void sentMessageToLazyQueue(){
+        rabbitTemplate.convertAndSend("lazy.queue.direct","pay","1");
+    }
 }

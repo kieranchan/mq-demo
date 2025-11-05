@@ -1,20 +1,24 @@
 package com.itheima.consumer.listerner;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.ExchangeTypes;
-import org.springframework.amqp.rabbit.annotation.Exchange;
-import org.springframework.amqp.rabbit.annotation.Queue;
-import org.springframework.amqp.rabbit.annotation.QueueBinding;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.annotation.*;
+import org.springframework.messaging.converter.MessageConversionException;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalTime;
 import java.util.Map;
 
+@Slf4j
 @Component
 public class SpringRabbitListener {
+
+    // 消費者確認機制測試
     @RabbitListener(queues = "simple.queue")
     public void listenSimpleQueueMessage(String msg) {
-        System.out.println(msg);
+        log.info("spring 消費者接收到消息：【{}】", msg);
+        throw new RuntimeException("故意的！");
+//        throw new MessageConversionException("故意的！");
     }
 
     @RabbitListener(queues = "work.queue")
@@ -92,5 +96,17 @@ public class SpringRabbitListener {
     @RabbitListener(queues = "object.queue")
     public void listenMapMessage(Map<String, Object> map) {
         System.out.println(map);
+    }
+
+    @RabbitListener(bindings = @QueueBinding(
+            value = @Queue(name = "test.lazyQueue",
+                    durable = "true",
+                    arguments = @Argument(name = "x-queue-mode", value = "lazy")
+            ),
+            exchange = @Exchange(name = "lazyQueue.direct"),
+            key = {"pay"}
+    ))
+    public void listerLazyQueue() {
+        System.out.println("監聽成功！");
     }
 }
