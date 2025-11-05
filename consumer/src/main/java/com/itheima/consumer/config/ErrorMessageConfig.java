@@ -34,8 +34,7 @@ public class ErrorMessageConfig {
 
     @Bean
     public MessageRecoverer republishMessageRecoverer(RabbitTemplate rabbitTemplate) {
-        return new RepublishMessageRecoverer(rabbitTemplate,
-                "error.direct", "error");
+        return new RepublishMessageRecoverer(rabbitTemplate, "error.direct", "error");
     }
 
 
