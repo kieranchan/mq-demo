@@ -2,6 +2,9 @@ package com.itheima.publisher.amqp;
 
 import lombok.var;
 import org.junit.jupiter.api.Test;
+import org.springframework.amqp.AmqpException;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -75,22 +78,41 @@ class SpringAmqpTest {
         rabbitTemplate.convertAndSend("object.queue", msg);
     }
 
+    // 消息持久化
     @Test
     public void sentMessageToLazyQueue() {
         rabbitTemplate.convertAndSend("lazy.queue.direct", "pay", "1");
     }
 
+    // 延遲消息測試——無插件
     @Test
     public void sentDelayQueue() {
-        rabbitTemplate.convertAndSend("ttl.fanout", "blue", "延遲消息測試！", message -> {
-            // 設置時間
-            var props = message.getMessageProperties();
-            long now = System.currentTimeMillis();
-            props.setHeader("x-published-at-ms", now);        // 自家頭：毫秒
-            props.setTimestamp(new java.util.Date(now));       // AMQP 標準 timestamp（可作後備）
-            // 如果用每條訊息 TTL，可以順手：
-             props.setExpiration("5000"); // 設置超時時間，例：5秒（字串）
-            return message;
+        rabbitTemplate.convertAndSend("ttl.fanout", "blue", "延遲消息測試！", new MessagePostProcessor() {
+            @Override
+            public Message postProcessMessage(Message message) throws AmqpException {
+                // 設置時間
+                var props = message.getMessageProperties();
+                long now = System.currentTimeMillis();
+                props.setHeader("x-published-at-ms", now);        // 自家頭：毫秒
+                props.setTimestamp(new java.util.Date(now));       // AMQP 標準 timestamp（可作後備）
+                // 如果用每條訊息 TTL，可以順手：
+                props.setExpiration("5000"); // 設置超時時間，例：5秒（字串）
+                return message;
+            }
+        });
+    }
+
+    // 演出消息測試——使用DelayExchange插件
+    @Test
+    public void sentDelayMessageToDelayQueue() {
+        String message = "This is delayed message";
+        rabbitTemplate.convertAndSend("delay.direct", "delay", message, new MessagePostProcessor() {
+            // 設置的這個東西很關鍵，這個設置的方法
+            @Override
+            public Message postProcessMessage(Message message) throws AmqpException {
+                message.getMessageProperties().setDelay(5000);
+                return message;
+            }
         });
     }
 }

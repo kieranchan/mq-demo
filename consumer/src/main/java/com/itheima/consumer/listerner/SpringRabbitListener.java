@@ -162,4 +162,14 @@ public class SpringRabbitListener {
         // 記得實戰用 logger（紀錄器），唔好長期用 System.out
         log.info("ttl.direct → ttl.queue1 delay = {} ms, body={}", delayMs, msg);
     }
+
+    // 基於DelayExchange插件 基於注解方式監聽
+    @RabbitListener(bindings = @QueueBinding(
+            value = @Queue(name = "delay.queue", durable = "true"),
+            exchange = @Exchange(name = "delay.direct", delayed = "true"),
+            key = "delay"
+    ))
+    public void listenDelayMessage(String msg) {
+        log.info("接收到delay.queue的延遲消息：{}", msg);
+    }
 }
