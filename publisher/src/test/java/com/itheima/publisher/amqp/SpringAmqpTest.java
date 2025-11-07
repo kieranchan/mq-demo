@@ -1,5 +1,6 @@
 package com.itheima.publisher.amqp;
 
+import lombok.var;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,15 +68,29 @@ class SpringAmqpTest {
 
     // 消息轉換器測試
     @Test
-    public void testSendMap(){
+    public void testSendMap() {
         HashMap<String, Object> msg = new HashMap<>();
-        msg.put("name","張三");
-        msg.put("age",16);
+        msg.put("name", "張三");
+        msg.put("age", 16);
         rabbitTemplate.convertAndSend("object.queue", msg);
     }
 
     @Test
-    public void sentMessageToLazyQueue(){
-        rabbitTemplate.convertAndSend("lazy.queue.direct","pay","1");
+    public void sentMessageToLazyQueue() {
+        rabbitTemplate.convertAndSend("lazy.queue.direct", "pay", "1");
+    }
+
+    @Test
+    public void sentDelayQueue() {
+        rabbitTemplate.convertAndSend("ttl.fanout", "blue", "延遲消息測試！", message -> {
+            // 設置時間
+            var props = message.getMessageProperties();
+            long now = System.currentTimeMillis();
+            props.setHeader("x-published-at-ms", now);        // 自家頭：毫秒
+            props.setTimestamp(new java.util.Date(now));       // AMQP 標準 timestamp（可作後備）
+            // 如果用每條訊息 TTL，可以順手：
+             props.setExpiration("5000"); // 設置超時時間，例：5秒（字串）
+            return message;
+        });
     }
 }

@@ -2,11 +2,12 @@ package com.itheima.consumer.listerner;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.ExchangeTypes;
+import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.*;
-import org.springframework.messaging.converter.MessageConversionException;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalTime;
+import java.util.Date;
 import java.util.Map;
 
 @Slf4j
@@ -108,5 +109,57 @@ public class SpringRabbitListener {
     ))
     public void listerLazyQueue() {
         System.out.println("監聽成功！");
+    }
+
+    // deadExchange與delayQueue
+//    @RabbitListener(bindings = @QueueBinding(
+//            value = @Queue(name = "ttl.queue",
+//                    durable = "true",
+//                    arguments = {
+//                            @Argument(name = "x-message-ttl", value = "5000",type = "java.lang.Integer"),
+//                            @Argument(name = "x-dead-letter-exchange", value = "ttl.direct"),
+//                            @Argument(name = "x-dead-letter-routing-key", value = "blue")
+//                    }),
+//            exchange = @Exchange(name = "ttl.fanout", type = "fanout")
+//    ))
+//    public void listenTTLMessage() {
+//        log.info("死信交換機傳遞成功！");
+//    }
+
+    @RabbitListener(bindings = @QueueBinding(
+            value = @Queue(name = "ttl.queue1", durable = "true"),
+            exchange = @Exchange(name = "ttl.direct"),
+            key = {"blue"}
+    ))
+    public void listenTTLMessage2(String msg, Message message) {
+//        String msg = new String(message.getBody(), StandardCharsets.UTF_8);
+//        log.info(msg);
+        long now = System.currentTimeMillis();
+        Map<String, Object> headers = message.getMessageProperties().getHeaders();
+
+        Long publishedMs = null;
+        Object h = headers.get("x-published-at-ms");
+        if (h instanceof Number n) {
+            publishedMs = n.longValue();
+        } else if (h instanceof String s) {
+            try {
+                publishedMs = Long.parseLong(s);
+            } catch (NumberFormatException ignore) {
+            }
+        }
+
+        // 後備：用 AMQP 標準 timestamp（如果 publisher 有 set 過）
+        Date ts = message.getMessageProperties().getTimestamp();
+
+        Long delayMs = null;
+        if (publishedMs != null) {
+            delayMs = now - publishedMs;
+        } else if (ts != null) {
+            delayMs = now - ts.getTime();
+        }
+
+        // 你原本已有 log，呢度直接印延遲
+        // 記得實戰用 logger（紀錄器），唔好長期用 System.out
+        log.info("ttl.direct → ttl.queue1 delay = {} ms, body={}", delayMs, msg);
     }
 }
